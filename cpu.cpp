@@ -83,15 +83,19 @@ CMD createCmd(int OPERATOR, bool isPtrL, bool isPtrR, int L, int R) {
     return tmp;
 }
 
+CMD parseCmd(string cmdString) {
+    //TODO
+}
+
 CMD PROG[] = {
-    createCmd(1, 1, 0, 6, 8),
-    createCmd(1, 0, 1, 0, 6),
+    createCmd(1, 1, 1, 6, 8),
+    createCmd(1, 1, 1, 0, 6),
     createCmd(8, 0, 0, 80, 0)
     };
 
 int main() {
     MEMORY[6] = 10;
-    MEMORY[8] = 8;
+    MEMORY[8] = 11;
     int n = 3;
     for (int i = 0; i < n; i++) {
         DOOP(PROG[i]);
