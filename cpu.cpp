@@ -1,4 +1,8 @@
 #include <iostream>
+#include <fstream>
+#include <sstream>
+
+
 
 #define NEXTCMDREG 129
 using namespace std;
@@ -118,7 +122,7 @@ void DOOP(CMD cmd) {
 
     DW OPERATOR = cmd % 256;
     
-    cout << "-" << OPERATOR << " " << L << " " << R << endl;
+    //cout << "-" << OPERATOR << " " << L << " " << R << endl;
     
 
     if (PROPS % 16 > 0) 
@@ -129,7 +133,7 @@ void DOOP(CMD cmd) {
     if (PROPS > 0) 
         L = MEMORY[L];
 
-    cout << "+" << OPERATOR << " " << L << " " << R << endl;
+    //cout << "+" << OPERATOR << " " << L << " " << R << endl;
 
     OP[OPERATOR](L, R);
 }
@@ -185,7 +189,7 @@ void parseCMD(string CMD, int &OPERATOR, bool &isPtrL, bool &isPtrR, int &L, int
     int splitter;
     CMD = CMD.substr(CMD.find_first_not_of(" "));
     splitter = CMD.find_first_of(" ");
-    cout << CMD << endl;
+    //cout << CMD << endl;
 
     OPERATOR = parseOperatorFromString(CMD.substr(0, splitter));
     //cout << OPERATOR << endl;
@@ -229,28 +233,39 @@ CMD* parseCMDs(string PROG) {
     return cmd;
 }
 
-int main() {
+int main(int argc, char* args[]) {
+    bool debugMode = false;
+    string filename;
+    if (argc >= 2)
+        filename = args[1];
+    else 
+        return 1;
 
-    string PROG = "\
-    LD 1 1; \
-    LD 0 0; \
-    LD 2 15; \
-    ADD 0 2; \
-    SUB 2 1; \
-    JNZB 2 2; \
-    SAY 0 0; \
-    HLT 0 0;";
+    if (argc == 3) 
+        debugMode = true;
 
+    ifstream file(filename);
+    string PROG;
+    string tmp;
+    while (!file.eof()) {
+        getline(file, tmp);
+        if (debugMode)
+            cout << tmp << endl;
+        tmp = tmp.substr(0, tmp.find(";")+1);
+        PROG.append(tmp);
+    }
+
+    if (debugMode) 
+        cout << PROG << endl;
     CMD* cmds = parseCMDs(PROG);
     MEMORY[NEXTCMDREG] = 0;
-
+    
     while (MEMORY[NEXTCMDREG] != -1) {
-        cout << MEMORY[NEXTCMDREG] << endl;
-        cout << cmds[MEMORY[NEXTCMDREG]] << endl;
+        if (debugMode) {
+            cout << MEMORY[NEXTCMDREG] << endl;
+            cout << cmds[MEMORY[NEXTCMDREG]] << endl;
+        }
         DOOP(cmds[MEMORY[NEXTCMDREG]]);
     }
-    
-    
-
     return 0;
 }
