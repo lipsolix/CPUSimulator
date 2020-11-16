@@ -4,14 +4,14 @@
 
 
 
-#define NEXTCMDREG 129
+#define NEXTCMDREG 511
 using namespace std;
 
 typedef unsigned int DW;
 typedef unsigned long long CMD;
 
 
-DW MEMORY[256];
+DW MEMORY[512];
 
 void NOP(int dst, int src) {
     MEMORY[NEXTCMDREG]++;
@@ -233,6 +233,11 @@ CMD* parseCMDs(string PROG) {
     return cmd;
 }
 
+void dumpMemory(int start, int size) {
+    for (int i = start; i < start + size; i++)
+        cout << i << "->" << MEMORY[i] << endl;
+}
+
 int main(int argc, char* args[]) {
     bool debugMode = false;
     string filename;
@@ -267,5 +272,8 @@ int main(int argc, char* args[]) {
         }
         DOOP(cmds[MEMORY[NEXTCMDREG]]);
     }
+    //dumpMemory(100, 20);
+
+
     return 0;
 }
