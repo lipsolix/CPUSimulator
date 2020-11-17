@@ -52,11 +52,15 @@ class MEMORYOBJECT {
         }
 
         int defineVar(string varName, int size) {
-            freeVar(varName);
-            pair<int, int> &item = VarNameToSizeAndMemory[varName];
-            item.first = size;
-            item.second = allocMemory(size);
-            return item.second;
+            if (VarNameToSizeAndMemory.count(varName) == 0) {
+                pair<int, int> &item = VarNameToSizeAndMemory[varName];
+                item.first = size;
+                item.second = allocMemory(size);
+                return item.second;
+            } else {
+                pair<int, int> &item = VarNameToSizeAndMemory[varName];
+                return item.second;
+            }
         }
 
         int freeVar(string varName) {
