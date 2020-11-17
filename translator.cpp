@@ -113,6 +113,8 @@ int parseOperator(string OPERATOR) {
         return 8;
     } else if (OPERATOR.compare("HLT") == 0) {
         return 9;
+    } else if (OPERATOR.compare("JMP") == 0) {
+        return 10;
     } else if (OPERATOR.compare("SAY") == 0) {
         return 13;
     } else if (OPERATOR.compare("LET") == 0) {
@@ -129,7 +131,7 @@ using mem_func_t = int(*)(string, int);
 mem_func_t MEMOPS[] = {DEFINEVAR, DEFINELABEL, FREEVAR};
 
 CMD createCmd(int OPERATOR, bool isLiteralL, bool isLiteralR, bool isPtrL, bool isPtrR, int L, int R) {
-    CMD tmp = ((CMD)OPERATOR << 56) | ((CMD)isLiteralL << 55) | ((CMD)isLiteralR << 54) | ((CMD)isPtrR << 53) | ((CMD)isPtrR << 52) | ((CMD)L << 26) | (CMD)R;
+    CMD tmp = ((CMD)OPERATOR << 36) | ((CMD)isLiteralL << 35) | ((CMD)isLiteralR << 34) | ((CMD)isPtrL << 33) | ((CMD)isPtrR << 32) | ((CMD)L << 16) | (CMD)R;
     //cout << OPERATOR << " " << isPtrL << " " << isPtrR << " " << L << " " << R << endl;
     //cout << tmp << endl;
     return tmp;
@@ -185,26 +187,27 @@ void parseCommand(string Command, int& Operator, bool& isLiteralL, bool& isLiter
         }
     } else {
         int address = MEMOPS[Operator - 100](leftString, R);
-        Operator = 8; // loads IP value to address
+        Operator = (Operator == 101) ? 1 : 0; // loads IP value to address
         isPtrL = false;
         isPtrR = false;
         isLiteralL = 0;
         isLiteralR = 0;
-        L = address;
-        R = 1; // first cell address stores IP
+        L = (Operator == 1) ? address : 0;
+        R = (Operator == 1) ? 8 : 0; // 8 cell address stores IP
     }
 
     cout << "'" << operatorString << "'->'" << leftString << "'->'" << rightString << "'" << endl;
     cout << Operator << " " << isPtrL << " " << isPtrR << " " << isLiteralL << " " << isLiteralR << " " << L << " " << R << endl;
 }
 
-
 void showBinary(CMD cmd) {
     string s;
     string s2;
-    while (cmd != 0) {
+    int i = 0;
+    while (i < 64) {
         s.append(cmd%2 ? "1" : "0");
         cmd >>= 1;
+        ++i;
     }
     while (s.length()) {
         s2.push_back(s.back());
@@ -212,8 +215,6 @@ void showBinary(CMD cmd) {
     }
     cout << s2 << endl;
 }
-
-
 
 CMD* parseCMDs(string PROG, int& cmdCount) {
     cmdCount = 0;
@@ -255,32 +256,15 @@ void saveCmdsToFile(string filename, CMD* cmds, int cmdCount) {
     }
 }
 
-CMD* getCmdsFromFile(string filename, int& cmdCount) {
-    ifstream file(filename, ios::binary);
-    string result;
-    string tmp;
-    while (!file.eof()) {
-        getline(file, tmp);
-        result.append(tmp);
-        tmp.erase();
-    }
-    cmdCount = result.length() / 8;
-    CMD* cmds = new CMD[cmdCount];
-    const char* charSeq = result.c_str();
-    for (int i = 0; i < cmdCount; i++) {
-        cmds[i] = ((CMD*)charSeq)[i];
-        showBinary(cmds[i]);
-    }
-    return cmds;
-}
+
 
 int main() {
+    cout << "----------------------TRANSLATION-STARTED----------------------" << endl;
     int cmdCount;
     string PROG = parseProgFromFile("prog.oleg");
     CMD* cmds = parseCMDs(PROG, cmdCount);
     saveCmdsToFile("prog.ovm", cmds, cmdCount);
-    CMD* c = getCmdsFromFile("prog.ovm", cmdCount);
-    cout << *c << endl;
+    cout << "---------------------TRANSLATION--IS--OVER---------------------" << endl;
 
 
     return 0;
