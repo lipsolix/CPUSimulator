@@ -246,10 +246,12 @@ string parseProgFromFile(string filename) {
     return PROG;
 }
 
-void saveCmdsToFile(string filename, int cmdCount) {
+void saveCmdsToFile(string filename, CMD* cmds, int cmdCount) {
     ofstream file(filename, ios::binary);
-    for (int i = 0; i < cmdCount * 8; i++) {
-        file << *((char*)&filename + i*8);
+    for (int i = 0; i < cmdCount; i++) {
+        for (int k = 0; k < 8; k++) {
+            file << *(((char*)(cmds + i)) + k);
+        }
     }
 }
 
@@ -276,8 +278,9 @@ int main() {
     int cmdCount;
     string PROG = parseProgFromFile("prog.oleg");
     CMD* cmds = parseCMDs(PROG, cmdCount);
-    saveCmdsToFile("prog.ovm", cmdCount);
-    getCmdsFromFile("prog.ovm", cmdCount);
+    saveCmdsToFile("prog.ovm", cmds, cmdCount);
+    CMD* c = getCmdsFromFile("prog.ovm", cmdCount);
+    cout << *c << endl;
 
 
     return 0;
